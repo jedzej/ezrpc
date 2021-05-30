@@ -1,0 +1,10 @@
+{
+  "name": "sample-server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "yarn run tsc-watch --onSuccess \"node ./dist/server.js\""
+  },
+  "dependencies": {
+    "sample-common": "1.0.0"
+  }
+}
