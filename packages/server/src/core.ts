@@ -1,8 +1,4 @@
-import {
-  createServer,
-  IncomingMessage,
-  ServerResponse,
-} from "http";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 import { collectData, safeJsonParse } from "./http.helpers";
 import { EZRPCHandler, EZRPCNode, EZRPCServerConfig } from "@ezrpc/common";
 
@@ -29,16 +25,22 @@ const httpRequestHandler = async <Tree extends EZRPCNode>(
   response: ServerResponse
 ) => {
   try {
-    const ezRpcHandler = resolveHandlerFromUrl(
-      request.url ?? "",
-      config.api
-    );
+    const ezRpcHandler = resolveHandlerFromUrl(request.url ?? "", config.api);
+
+    if (!ezRpcHandler) {
+      response.statusCode = 404;
+      response.end();
+      return;
+    }
 
     const data = await collectData(request);
 
     const input = safeJsonParse(data) ?? {};
 
     const output = await ezRpcHandler?.(input);
+
+    response.setHeader("content-type", "application/json");
+    response.setHeader("Access-Control-Allow-Origin", "*");
 
     response.end(JSON.stringify(output));
   } catch (err) {

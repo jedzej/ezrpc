@@ -1,22 +1,32 @@
 import { createEzRpcServer } from "@ezrpc/server";
-import { MyServer } from "sample-common";
+import { MyServer } from "sample-schema";
 
-const deferredAdd: MyServer["calc"]["deferredAdd"] = ({ a, b }) =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ result: a + b });
-    }, 3000);
-  });
+const calc: MyServer["calc"] = {
+  add: async ({ a, b }) => ({ result: a + b }),
+  sqrt: async ({ a }) => ({ result: Math.sqrt(a) }),
+};
 
-const add: MyServer["calc"]["add"] = ({ a, b }) => ({ result: a + b });
+const echo: MyServer["echo"] = {
+  reply: async ({ message }) => {
+    console.log("reply", message);
+    return { reply: message };
+  },
+
+  deferredReply: ({ message, delay }) => {
+    console.log("deferredReply", message, delay);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ reply: message });
+      }, delay ?? 0);
+    });
+  },
+};
 
 const server = createEzRpcServer<MyServer>({
   port: 3001,
   api: {
-    calc: {
-      add,
-      deferredAdd,
-    },
+    calc,
+    echo,
   },
 });
 

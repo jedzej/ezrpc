@@ -5,6 +5,6 @@
     "start": "yarn run tsc-watch --onSuccess \"node ./dist/server.js\""
   },
   "dependencies": {
-    "sample-common": "1.0.0"
+    "sample-schema": "1.0.0"
   }
 }

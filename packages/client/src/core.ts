@@ -1,12 +1,18 @@
 import { CallData, ClientConfig } from "./types";
 
-const fakeHandler = async (
+const fetchHandler = async (
   { path, params }: CallData,
   { address }: ClientConfig
 ) => {
-  const normalizedAddress = address + address.endsWith("/") ? "" : "/";
+  const normalizedAddress = address + (address.endsWith("/") ? "" : "/");
   const response = await fetch(`${normalizedAddress}${path.join("/")}/`, {
+    method: "POST",
+    mode: "cors",
     body: JSON.stringify(params),
+    credentials: "omit",
+    headers: {
+      Accept: "application/json",
+    },
   });
   return response.json();
 };
@@ -20,7 +26,7 @@ function createProxy<T>(path: string[], config: ClientConfig): T {
       return createProxy<any>(childPath, config);
     },
     apply: (target, _, argumentsList) => {
-      return fakeHandler(
+      return fetchHandler(
         { path: target.path, params: argumentsList[0] },
         config
       );

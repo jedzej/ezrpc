@@ -1,7 +1,7 @@
 export type EZRPCHandler<
   Input extends {} | undefined,
   Output extends {} | undefined
-> = (input: Input) => Output | Promise<Output>;
+> = (input: Input) => Promise<Output>;
 
 export type EZRPCNode<
   Input extends {} | undefined = any,
@@ -17,11 +17,11 @@ export enum EZRPC_ERROR_CODE {
   APPLICATION_ERROR,
   CRITICAL_ERROR,
   METHOD_MISSING_ERROR,
-  UNKNOWN_ERROR
+  UNKNOWN_ERROR,
 }
 
 export interface EZRPCError {
-  message: string,
-  code: EZRPC_ERROR_CODE
-  data?: any
+  message: string;
+  code: EZRPC_ERROR_CODE;
+  data?: any;
 }
