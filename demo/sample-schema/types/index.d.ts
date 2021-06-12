@@ -1,15 +1,13 @@
-import { EZRPCHandler } from "@ezrpc/common";
-
-export type MyServer = {
+export type MySchema = {
   calc: {
-    add: EZRPCHandler<{ a: number; b: number }, { result: number }>;
-    sqrt: EZRPCHandler<{ a: number }, { result: number }>;
+    add: (params: { a: number; b: number }) => number;
+    sqrt: (params: { a: number }) => number;
   };
   echo: {
-    reply: EZRPCHandler<{ message: string }, { reply: string }>;
-    deferredReply: EZRPCHandler<
-      { message: string; delay?: number },
-      { reply: string }
-    >;
+    reply: (params: { message: string }) => string;
+    deferredReply: (params: { message: string; delay?: number }) => string;
+  };
+  fail: {
+    internal: () => boolean;
   };
 };

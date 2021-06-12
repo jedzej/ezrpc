@@ -1,5 +1,6 @@
 {
   "name": "sample-schema",
   "version": "1.0.0",
+  "private": "true",
   "types": "./types/index.d.ts"
 }

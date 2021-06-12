@@ -13,8 +13,13 @@
     "build:server": "yarn workspace @ezrpc/server build",
     "build:client": "yarn workspace @ezrpc/client build",
     "build": "yarn build:common && yarn build:server && yarn build:client",
-    "sample:server:start": "yarn workspace sample-server start",
-    "sample:client:start": "yarn workspace sample-client start"
+    "sample:start:server": "yarn workspace sample-server start",
+    "sample:start:client": "yarn workspace sample-client start",
+    "sample:start": "yarn concurrently \"yarn:sample:start:*\"",
+    "dev:common": "yarn workspace @ezrpc/common dev",
+    "dev:server": "yarn workspace @ezrpc/server dev",
+    "dev:client": "yarn workspace @ezrpc/client dev",
+    "dev": "yarn build:common && yarn concurrently \"yarn:dev:*\""
   },
   "devDependencies": {
     "@types/node": "^15.6.1",
@@ -22,6 +27,7 @@
     "typescript": "^4.3.2"
   },
   "dependencies": {
+    "concurrently": "^6.2.0",
     "rimraf": "^3.0.2"
   }
 }

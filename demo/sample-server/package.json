@@ -1,6 +1,7 @@
 {
   "name": "sample-server",
   "version": "1.0.0",
+  "private": "true",
   "scripts": {
     "start": "yarn run tsc-watch --onSuccess \"node ./dist/server.js\""
   },

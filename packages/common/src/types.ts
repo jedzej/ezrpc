@@ -1,27 +1,23 @@
-export type EZRPCHandler<
-  Input extends {} | undefined,
-  Output extends {} | undefined
-> = (input: Input) => Promise<Output>;
-
-export type EZRPCNode<
-  Input extends {} | undefined = any,
-  Output extends {} | undefined = any
-> = EZRPCHandler<Input, Output> | { [property: string]: EZRPCNode };
-
-export interface EZRPCServerConfig<Tree extends EZRPCNode> {
-  api: Tree;
-  port?: number;
-}
-
 export enum EZRPC_ERROR_CODE {
-  APPLICATION_ERROR,
-  CRITICAL_ERROR,
-  METHOD_MISSING_ERROR,
-  UNKNOWN_ERROR,
+  VALIDATION_ERROR = 1002,
+  ASSERTION_ERROR = 1001,
+  APPLICATION_ERROR = 1000,
+  CRITICAL_ERROR = 2,
+  NETWORK_ERROR = 1,
+  UNKNOWN = 0,
+  PARSE_ERROR = -32700,
+  INVALID_REQUEST = -32600,
+  METHOD_NOT_FOUND = -32601,
+  INVALID_PARAMS = -32602,
+  INTERNAL_ERROR = -32603,
 }
 
 export interface EZRPCError {
-  message: string;
   code: EZRPC_ERROR_CODE;
+  message: string;
   data?: any;
 }
+
+export type EZRPCResult<T> = {
+  result: T;
+};

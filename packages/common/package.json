@@ -1,5 +1,6 @@
 {
   "name": "@ezrpc/common",
+  "license": "MIT",
   "version": "1.0.0",
   "files": [
     "dist"
@@ -10,6 +11,7 @@
     "clean": "rimraf dist",
     "prepack": "yarn build",
     "build": "yarn clean && yarn compile",
-    "compile": "tsc --build && cp \"./package.json\" ./dist/"
+    "compile": "tsc --build && cp \"./package.json\" ./dist/",
+    "dev": "tsc --watch"
   }
 }

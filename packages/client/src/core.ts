@@ -1,21 +1,8 @@
-import { CallData, ClientConfig } from "./types";
-
-const fetchHandler = async (
-  { path, params }: CallData,
-  { address }: ClientConfig
-) => {
-  const normalizedAddress = address + (address.endsWith("/") ? "" : "/");
-  const response = await fetch(`${normalizedAddress}${path.join("/")}/`, {
-    method: "POST",
-    mode: "cors",
-    body: JSON.stringify(params),
-    credentials: "omit",
-    headers: {
-      Accept: "application/json",
-    },
-  });
-  return response.json();
-};
+import { httpBearerClient } from "./bearer/http.client";
+import {
+  ClientConfig,
+  EZRPCApiClient,
+} from "./types";
 
 function createProxy<T>(path: string[], config: ClientConfig): T {
   const node = () => {};
@@ -25,17 +12,17 @@ function createProxy<T>(path: string[], config: ClientConfig): T {
       const childPath = [...target.path, String(prop)];
       return createProxy<any>(childPath, config);
     },
-    apply: (target, _, argumentsList) => {
-      return fetchHandler(
-        { path: target.path, params: argumentsList[0] },
-        config
-      );
-    },
+    apply: (target, _, argumentsList) =>
+      (config.bearerHandler ?? httpBearerClient)({
+        path: target.path,
+        params: argumentsList[0],
+        config,
+      }),
   }) as unknown as T;
 }
 
-export const createEzRpcClient = <T>(config: { address: string }) => {
+export const createEzRpcClient = <T extends {}>(config: ClientConfig) => {
   return {
-    api: createProxy<T>([], config),
+    api: createProxy<EZRPCApiClient<T>>([], config),
   };
 };

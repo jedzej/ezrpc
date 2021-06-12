@@ -1,33 +1,30 @@
-import { createEzRpcServer } from "@ezrpc/server";
-import { MyServer } from "sample-schema";
+import { createEzRpcHttpServer } from "@ezrpc/server";
+import { MySchema } from "sample-schema";
 
-const calc: MyServer["calc"] = {
-  add: async ({ a, b }) => ({ result: a + b }),
-  sqrt: async ({ a }) => ({ result: Math.sqrt(a) }),
-};
-
-const echo: MyServer["echo"] = {
-  reply: async ({ message }) => {
-    console.log("reply", message);
-    return { reply: message };
+const server = createEzRpcHttpServer<MySchema>({
+  calc: {
+    add: ({ a, b }) => ({ result: a + b }),
+    sqrt: ({ a }) => ({ result: Math.sqrt(a) }),
   },
 
-  deferredReply: ({ message, delay }) => {
-    console.log("deferredReply", message, delay);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ reply: message });
-      }, delay ?? 0);
-    });
-  },
-};
+  echo: {
+    reply: ({ message }) => ({ result: message }),
 
-const server = createEzRpcServer<MyServer>({
-  port: 3001,
-  api: {
-    calc,
-    echo,
+    deferredReply: ({ message, delay }) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ result: message });
+        }, delay ?? 0);
+      }),
+  },
+  fail: {
+    internal: () => {
+      (undefined as any)();
+      return {
+        result: true,
+      };
+    },
   },
 });
 
-server.listen();
+server.listen(3001);
