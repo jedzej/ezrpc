@@ -1,4 +1,5 @@
 export type MySchema = {
+  getUserAgent: () => string;
   calc: {
     add: (params: { a: number; b: number }) => number;
     sqrt: (params: { a: number }) => number;

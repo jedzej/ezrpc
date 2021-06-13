@@ -1,11 +1,21 @@
-import { createError, EZRPC_ERROR_CODE } from "@ezrpc/common";
+import { BEARER, createError, EZRPC_ERROR_CODE } from "@ezrpc/common";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { collectData } from "./collectData";
-import { EZRPCServerConfig, EZRPCApiServer } from "../../types";
+import {
+  EZRPCServerConfig,
+  EZRPCApiServer,
+  EZRPCServerInputMeta,
+  EZRPCServerOutputMeta,
+} from "../../types";
 import { resolveHandlerFromUrl } from "./methodResolver";
 import { httpLogger } from "../../logger/http";
 
 const createSendResponse = (response: ServerResponse) => (data: any) => {
+  Object.entries(data.meta?.bearer.http.headers ?? {}).forEach(
+    ([key, value]) => {
+      response.setHeader(key, value as string);
+    }
+  );
   response.setHeader("content-type", "application/json");
   response.setHeader("Access-Control-Allow-Origin", "*");
   response.end(JSON.stringify(data));
@@ -20,6 +30,16 @@ const createSendErrorResponse =
         typeof error === "string" ? error : error.message
       ),
     });
+
+const createInputMeta = (
+  request: IncomingMessage
+): EZRPCServerInputMeta<BEARER.HTTP> => ({
+  bearer: {
+    http: {
+      headers: request.headers,
+    },
+  },
+});
 
 export const createEzRpcHttpHandler = <S extends {}>(
   config: EZRPCServerConfig<S>
@@ -63,19 +83,21 @@ export const createEzRpcHttpHandler = <S extends {}>(
       return sendErrorResponse(error, EZRPC_ERROR_CODE.INVALID_REQUEST);
     }
 
-    let params;
-    try {
-      httpLogger.info(`Parsing method params`);
-      params = JSON.parse(data);
-    } catch (error) {
-      httpLogger.error(`Error when parsing method params`, { error });
-      return sendErrorResponse(error, EZRPC_ERROR_CODE.INVALID_PARAMS);
+    let params = undefined;
+    if (data.length > 0) {
+      try {
+        httpLogger.info(`Parsing method params`);
+        params = JSON.parse(data);
+      } catch (error) {
+        httpLogger.error(`Error when parsing method params`, { error });
+        return sendErrorResponse(error, EZRPC_ERROR_CODE.INVALID_PARAMS);
+      }
     }
 
     let methodResponse;
     try {
       httpLogger.info(`Handling RPC method`);
-      methodResponse = await methodHandler(params);
+      methodResponse = await methodHandler(params, createInputMeta(request));
     } catch (error) {
       httpLogger.error(`Method handler error`, { error });
       return sendErrorResponse(error, EZRPC_ERROR_CODE.APPLICATION_ERROR);
@@ -86,7 +108,9 @@ export const createEzRpcHttpHandler = <S extends {}>(
   return ezRpcHttpHandler;
 };
 
-export const createEzRpcHttpServer = <S extends {}>(api: EZRPCApiServer<S>) => {
+export const createEzRpcHttpServer = <S extends {}>(
+  api: EZRPCApiServer<S, BEARER.HTTP>
+) => {
   const ezRpcHttpHandler = createEzRpcHttpHandler({ api });
   const server = createServer(ezRpcHttpHandler);
   return server;

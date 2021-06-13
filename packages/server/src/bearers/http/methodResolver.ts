@@ -1,10 +1,11 @@
+import { BEARER } from "../../../../common/dist";
 import { httpLogger } from "../../logger/http";
-import { EZRPCServerConfig } from "../../types";
+import { EZRPCServerHandler, EZRPCServerConfig } from "../../types";
 
-export const resolveHandlerFromUrl = <T extends {}>(
+export const resolveHandlerFromUrl = <T extends object>(
   url: string,
   config: EZRPCServerConfig<T>
-) => {
+): EZRPCServerHandler<any, BEARER.HTTP> | undefined => {
   try {
     const path = url.split("/").filter(Boolean);
     const ezRpcFinalNode = path.reduce(

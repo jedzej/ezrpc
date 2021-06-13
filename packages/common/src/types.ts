@@ -1,3 +1,8 @@
+export enum BEARER {
+  HTTP = "http",
+  WS = "ws",
+}
+
 export enum EZRPC_ERROR_CODE {
   VALIDATION_ERROR = 1002,
   ASSERTION_ERROR = 1001,

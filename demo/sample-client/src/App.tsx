@@ -69,7 +69,19 @@ function App() {
           }
         }}
       >
-        DEFERRED REPLY
+        FAIL INTERNAL
+      </button>
+      <button
+        onClick={async () => {
+          const response = await client.api.getUserAgent();
+          if (response.ok) {
+            console.log("result:", response.result);
+          } else {
+            console.log("error:", response.error);
+          }
+        }}
+      >
+        GET USER AGENT
       </button>
     </div>
   );
