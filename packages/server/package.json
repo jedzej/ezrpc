@@ -15,6 +15,7 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@ezrpc/common": "1.0.0"
+    "@ezrpc/common": "1.0.0",
+    "winston": "^3.3.3"
   }
 }

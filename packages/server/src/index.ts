@@ -2,5 +2,5 @@ export { EZRPCError, EZRPC_ERROR_CODE } from "@ezrpc/common";
 export {
   createEzRpcHttpHandler,
   createEzRpcHttpServer,
-} from "./bearer/http.bearer";
+} from "./bearers/http/handler.http";
 export { EZRPCApiServer } from "./types";
