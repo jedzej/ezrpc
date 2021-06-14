@@ -5,12 +5,13 @@ const client = createEzRpcClient<MySchema>({
   address: "http://localhost:3001",
 });
 
+
 function App() {
   return (
     <div>
       <button
         onClick={async () => {
-          const response = await client.api.calc.sqrt({ a: 9 });
+          const response = await client.exec.calc.sqrt({ a: 16 });
           if (response.ok) {
             console.log("result:", response.result);
           } else {
@@ -18,11 +19,25 @@ function App() {
           }
         }}
       >
-        SQRT
+        SQRT (cached)
       </button>
       <button
         onClick={async () => {
-          const response = await client.api.calc.add({ a: 1, b: 2 });
+          const [{ cached }, execute] = client.defer.calc.sqrt({ a: 16 });
+          console.log(cached);
+          const response = await execute();
+          if (response.ok) {
+            console.log("result:", response.result);
+          } else {
+            console.log("error:", response.error);
+          }
+        }}
+      >
+        deferred SQRT (cached)
+      </button>
+      <button
+        onClick={async () => {
+          const response = await client.exec.calc.add({ a: 1, b: 2 });
           if (response.ok) {
             console.log("result:", response.result);
           } else {
@@ -34,7 +49,7 @@ function App() {
       </button>
       <button
         onClick={async () => {
-          const response = await client.api.echo.reply({ message: "abcd" });
+          const response = await client.exec.echo.reply({ message: "abcd" });
           if (response.ok) {
             console.log("result:", response.result);
           } else {
@@ -46,7 +61,7 @@ function App() {
       </button>
       <button
         onClick={async () => {
-          const response = await client.api.echo.deferredReply({
+          const response = await client.exec.echo.deferredReply({
             message: "efgh",
             delay: 3000,
           });
@@ -61,7 +76,7 @@ function App() {
       </button>
       <button
         onClick={async () => {
-          const response = await client.api.fail.internal();
+          const response = await client.exec.fail.internal();
           if (response.ok) {
             console.log("result:", response.result);
           } else {
@@ -73,7 +88,7 @@ function App() {
       </button>
       <button
         onClick={async () => {
-          const response = await client.api.getUserAgent();
+          const response = await client.exec.getUserAgent();
           if (response.ok) {
             console.log("result:", response.result);
           } else {

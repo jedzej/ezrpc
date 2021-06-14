@@ -4,7 +4,15 @@ import { MySchema } from "sample-schema";
 const server = createEzRpcHttpServer<MySchema>({
   calc: {
     add: ({ a, b }) => ({ result: a + b }),
-    sqrt: ({ a }) => ({ result: Math.sqrt(a) }),
+    sqrt: ({ a }) => ({
+      result: Math.sqrt(a),
+      meta: {
+        cache: {
+          policy: "pure-memo",
+          ttl: 3000,
+        },
+      },
+    }),
   },
 
   getUserAgent: (_, meta) => {
@@ -20,11 +28,9 @@ const server = createEzRpcHttpServer<MySchema>({
     return {
       result: userAgent,
       meta: {
-        bearer: {
-          http: {
-            headers: {
-              "x-ezrpc-ua": "done",
-            },
+        httpBearer: {
+          headers: {
+            "x-ezrpc-ua": "done",
           },
         },
       },

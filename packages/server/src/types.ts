@@ -1,4 +1,4 @@
-import { BEARER, EZRPCError } from "@ezrpc/common";
+import { BEARER, EZRPCError, EZRPCMetaCache } from "@ezrpc/common";
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http";
 
 export enum CTX_COMMAND_TYPE {
@@ -32,22 +32,26 @@ export type EZRPCServerInputMeta<B extends BEARER> = {
 };
 
 export type EZRPCServerOutputMeta<B extends BEARER> = {
-  bearer: B extends BEARER.HTTP
+  httpBearer?: B extends BEARER.HTTP
     ? {
-        http: {
-          headers: OutgoingHttpHeaders;
-        };
+        headers?: OutgoingHttpHeaders;
       }
-    : {};
-  cache?: {
-    policy: "no-cache" | "pure-memo";
-    ttl?: number;
-  };
+    : never;
+  cache?: EZRPCMetaCache;
 };
 
+export type EZRPCResultResponse<
+  Foo extends (...args: any) => any,
+  B extends BEARER
+> = {
+  result: ReturnType<Foo>;
+  meta?: EZRPCServerOutputMeta<B>;
+};
+
+export type EZRPCErrorResponse = { error: EZRPCError };
+
 export type EZRPCResponse<Foo extends (...args: any) => any, B extends BEARER> =
-  | { result: ReturnType<Foo>; meta?: EZRPCServerOutputMeta<B> }
-  | { error: EZRPCError };
+  EZRPCResultResponse<Foo, B> | EZRPCErrorResponse;
 
 export type EZRPCServerHandler<
   Foo extends (...args: any) => any,

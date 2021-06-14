@@ -26,3 +26,8 @@ export interface EZRPCError {
 export type EZRPCResult<T> = {
   result: T;
 };
+
+export type EZRPCMetaCache = {
+  policy: "no-cache" | "pure-memo";
+  ttl: number;
+};

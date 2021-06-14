@@ -5,20 +5,17 @@ import {
   EZRPCServerConfig,
   EZRPCApiServer,
   EZRPCServerInputMeta,
-  EZRPCServerOutputMeta,
+  EZRPCResponse,
+  EZRPCResultResponse,
 } from "../../types";
 import { resolveHandlerFromUrl } from "./methodResolver";
 import { httpLogger } from "../../logger/http";
+import { isResultResponse } from "../../guards";
 
-const createSendResponse = (response: ServerResponse) => (data: any) => {
-  Object.entries(data.meta?.bearer.http.headers ?? {}).forEach(
-    ([key, value]) => {
-      response.setHeader(key, value as string);
-    }
-  );
-  response.setHeader("content-type", "application/json");
-  response.setHeader("Access-Control-Allow-Origin", "*");
-  response.end(JSON.stringify(data));
+const createSendResponse = (serverResponse: ServerResponse) => (data: any) => {
+  serverResponse.setHeader("content-type", "application/json");
+  serverResponse.setHeader("Access-Control-Allow-Origin", "*");
+  serverResponse.end(JSON.stringify(data));
 };
 
 const createSendErrorResponse =
@@ -41,15 +38,32 @@ const createInputMeta = (
   },
 });
 
+const processOutputMeta = (
+  rpcResponse: EZRPCResultResponse<any, BEARER.HTTP>,
+  serverResponse: ServerResponse
+) => {
+  if (!rpcResponse.meta) {
+    return undefined;
+  }
+  Object.entries(rpcResponse.meta?.bearer?.http?.headers ?? {}).forEach(
+    ([key, value]) => {
+      serverResponse.setHeader(key, value as string);
+    }
+  );
+  return {
+    ...rpcResponse.meta,
+  };
+};
+
 export const createEzRpcHttpHandler = <S extends {}>(
   config: EZRPCServerConfig<S>
 ) => {
   const ezRpcHttpHandler = async (
     request: IncomingMessage,
-    response: ServerResponse
+    serverResponse: ServerResponse
   ) => {
     const profiler = httpLogger.startTimer();
-    const sendResponseInternal = createSendResponse(response);
+    const sendResponseInternal = createSendResponse(serverResponse);
     const sendResponse = (data: any) => {
       sendResponseInternal(data);
       profiler.done({ message: "sending response", data });
@@ -94,7 +108,7 @@ export const createEzRpcHttpHandler = <S extends {}>(
       }
     }
 
-    let methodResponse;
+    let methodResponse: EZRPCResponse<any, BEARER.HTTP>;
     try {
       httpLogger.info(`Handling RPC method`);
       methodResponse = await methodHandler(params, createInputMeta(request));
@@ -102,7 +116,16 @@ export const createEzRpcHttpHandler = <S extends {}>(
       httpLogger.error(`Method handler error`, { error });
       return sendErrorResponse(error, EZRPC_ERROR_CODE.APPLICATION_ERROR);
     }
-    sendResponse(methodResponse);
+
+    if (isResultResponse(methodResponse)) {
+      const meta = processOutputMeta(methodResponse, serverResponse);
+      sendResponse({
+        result: methodResponse.result,
+        meta,
+      });
+    } else {
+      sendResponse(methodResponse);
+    }
   };
 
   return ezRpcHttpHandler;

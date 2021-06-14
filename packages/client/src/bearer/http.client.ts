@@ -8,14 +8,14 @@ const createErrorResponse = (
 ) => ({ ok: false as const, error: createError(code, message, data) });
 
 export const httpBearerClient = async ({
-  path,
+  method,
   params,
   config: { address },
 }: CallData): Promise<EZRPCClientResponse<any>> => {
   const normalizedAddress = address + (address.endsWith("/") ? "" : "/");
   let response: Response;
   try {
-    response = await fetch(`${normalizedAddress}${path.join("/")}/`, {
+    response = await fetch(`${normalizedAddress}${method.join("/")}/`, {
       method: "POST",
       mode: "cors",
       body: JSON.stringify(params),
@@ -58,5 +58,5 @@ export const httpBearerClient = async ({
     );
   }
 
-  return { ok: true as const, result: json.result };
+  return { ok: true as const, result: json.result, meta: json.meta };
 };
