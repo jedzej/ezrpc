@@ -1,4 +1,10 @@
-import { BEARER, createError, EZRPC_ERROR_CODE } from "@ezrpc/common";
+import {
+  BEARER,
+  createError,
+  EZRPCError,
+  EZRPC_ERROR_CODE,
+  isEzrpcError,
+} from "@ezrpc/common";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { collectData } from "./collectData";
 import {
@@ -20,13 +26,22 @@ const createSendResponse = (serverResponse: ServerResponse) => (data: any) => {
 
 const createSendErrorResponse =
   (sendResponse: (data: any) => void) =>
-  (error: Error | string, code?: EZRPC_ERROR_CODE) =>
+  (error: EZRPCError | Error | string, code?: EZRPC_ERROR_CODE) => {
+    const ezrpcError = isEzrpcError(error)
+      ? error
+      : createError(
+          code ?? EZRPC_ERROR_CODE.INTERNAL_ERROR,
+          typeof error === "string" ? error : error.message
+        );
     sendResponse({
-      error: createError(
-        code ?? EZRPC_ERROR_CODE.INTERNAL_ERROR,
-        typeof error === "string" ? error : error.message
-      ),
+      error: {
+        message: ezrpcError.message,
+        data: ezrpcError.data,
+        code: ezrpcError.code,
+        stack: ezrpcError.stack,
+      },
     });
+  };
 
 const createInputMeta = (
   request: IncomingMessage
@@ -45,7 +60,7 @@ const processOutputMeta = (
   if (!rpcResponse.meta) {
     return undefined;
   }
-  Object.entries(rpcResponse.meta?.bearer?.http?.headers ?? {}).forEach(
+  Object.entries(rpcResponse.meta?.httpBearer?.headers ?? {}).forEach(
     ([key, value]) => {
       serverResponse.setHeader(key, value as string);
     }
@@ -113,6 +128,7 @@ export const createEzRpcHttpHandler = <S extends {}>(
       httpLogger.info(`Handling RPC method`);
       methodResponse = await methodHandler(params, createInputMeta(request));
     } catch (error) {
+      console.log(error);
       httpLogger.error(`Method handler error`, { error });
       return sendErrorResponse(error, EZRPC_ERROR_CODE.APPLICATION_ERROR);
     }

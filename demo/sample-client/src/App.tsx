@@ -80,7 +80,7 @@ function App() {
           if (response.ok) {
             console.log("result:", response.result);
           } else {
-            console.log("error:", response.error);
+            console.log("error:", response.error.code);
           }
         }}
       >
@@ -92,11 +92,23 @@ function App() {
           if (response.ok) {
             console.log("result:", response.result);
           } else {
-            console.log("error:", response.error);
+            console.log("error:", response.error.code);
           }
         }}
       >
         GET USER AGENT
+      </button>
+      <button
+        onClick={async () => {
+          const response = await client.exec.fail.exception();
+          if (response.ok) {
+            console.log("result:", response.result);
+          } else {
+            console.log("error:", response.error);
+          }
+        }}
+      >
+        FAIL EXCEPTION
       </button>
     </div>
   );

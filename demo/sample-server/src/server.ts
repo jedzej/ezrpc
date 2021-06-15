@@ -1,4 +1,8 @@
-import { createEzRpcHttpServer, EZRPC_ERROR_CODE } from "@ezrpc/server";
+import {
+  createEzRpcHttpServer,
+  EZRPC_ERROR_CODE,
+  createError,
+} from "@ezrpc/server";
 import { MySchema } from "sample-schema";
 
 const server = createEzRpcHttpServer<MySchema>({
@@ -18,12 +22,7 @@ const server = createEzRpcHttpServer<MySchema>({
   getUserAgent: (_, meta) => {
     const userAgent = meta.bearer.http.headers["user-agent"];
     if (!userAgent) {
-      return {
-        error: {
-          code: EZRPC_ERROR_CODE.APPLICATION_ERROR,
-          message: "No user agent",
-        },
-      };
+      throw createError(EZRPC_ERROR_CODE.APPLICATION_ERROR, "No user agent");
     }
     return {
       result: userAgent,
@@ -51,6 +50,12 @@ const server = createEzRpcHttpServer<MySchema>({
   fail: {
     internal: () => {
       (undefined as any)();
+      return {
+        result: true,
+      };
+    },
+    exception: () => {
+      throw createError(EZRPC_ERROR_CODE.VALIDATION_ERROR, "Error thrown");
       return {
         result: true,
       };

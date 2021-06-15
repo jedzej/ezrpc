@@ -53,7 +53,7 @@ export const httpBearerClient = async ({
   if (typeof json.error !== "undefined") {
     return createErrorResponse(
       json.error.code,
-      json.error.message,
+      json.error.message ?? "Unknown error",
       json.error.data
     );
   }

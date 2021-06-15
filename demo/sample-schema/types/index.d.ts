@@ -10,5 +10,6 @@ export type MySchema = {
   };
   fail: {
     internal: () => boolean;
+    exception: () => boolean;
   };
 };

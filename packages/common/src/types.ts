@@ -17,10 +17,14 @@ export enum EZRPC_ERROR_CODE {
   INTERNAL_ERROR = -32603,
 }
 
-export interface EZRPCError {
-  code: EZRPC_ERROR_CODE;
-  message: string;
-  data?: any;
+export class EZRPCError extends Error {
+  public code: EZRPC_ERROR_CODE;
+  public data?: any;
+  constructor(message: string, code: EZRPC_ERROR_CODE, data?: any) {
+    super(message);
+    this.code = code;
+    this.data = data;
+  }
 }
 
 export type EZRPCResult<T> = {
